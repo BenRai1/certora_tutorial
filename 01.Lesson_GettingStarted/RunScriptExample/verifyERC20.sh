@@ -1,8 +1,8 @@
 # format: <relative/path/to/solidity/file>:<contrac_name> --verify <contract_name>:<relative/path/to/spec/file>
 
-certoraRun ERC20Lesson1/ERC20.sol:ERC20 --verify ERC20:ERC20Lesson1/Parametric.spec \
+certoraRun ERC20Lesson1/ERC20.sol --verify ERC20:ERC20Lesson1/Parametric.spec \
   --send_only \
-  --rule "onlyHolderCanDecreaseBalance" \
+  # --rule mintIncreasesSupplyAndBalance \
   # --msg "$2" \
   # --solc solc8.0 \
 

@@ -32,11 +32,12 @@ import "./IERC20Metadata.sol";
  * allowances. See {IERC20-approve}.
  */
 contract ERC20 is IERC20, IERC20Metadata {
-    mapping(address => uint256) private _balances;
+    // mapping(address => uint256) private _balances;
+    mapping(address => uint256) public _balances; //changed for the audit
 
     mapping(address => mapping(address => uint256)) private _allowances;
 
-    uint256 private _totalSupply;
+    uint256 public _totalSupply;
 
     address public _owner;
 
