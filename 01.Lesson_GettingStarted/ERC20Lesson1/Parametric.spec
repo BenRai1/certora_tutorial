@@ -12,9 +12,9 @@
 
 methods {
     // When a function is not using the environment (e.g., msg.sender), it can be declared as envfree 
-    balanceOf(address)         returns(uint) envfree
-    allowance(address,address) returns(uint) envfree
-    totalSupply()              returns(uint) envfree
+    function balanceOf(address) external returns(uint) envfree;
+    function allowance(address,address) external returns(uint) envfree;
+    function totalSupply() external returns(uint) envfree;
 }
 
 
@@ -35,7 +35,7 @@ rule onlyHolderCanChangeAllowance {
         "approve must only change the sender's allowance";
 
     assert allowance_after > allowance_before =>
-        (f.selector == approve(address,uint).selector || f.selector == increaseAllowance(address,uint).selector),
+        (f.selector == sig:approve(address,uint).selector || f.selector == sig:increaseAllowance(address,uint).selector || f.selector == sig:decreaseAllowance(address,uint).selector),
         "only approve and increaseAllowance can increase allowances";
 }
 

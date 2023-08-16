@@ -15,9 +15,9 @@
 
 methods {
     // When a function is not using the environment (e.g., msg.sender), it can be declared as envfree 
-    balanceOf(address)         returns(uint) envfree
-    allowance(address,address) returns(uint) envfree
-    totalSupply()              returns(uint) envfree
+    function balanceOf(address) external returns(uint) envfree;
+    function allowance(address,address) external returns(uint) envfree;
+    function totalSupply() external returns(uint) envfree;
 }
 
 //// ## Part 1: Basic rules ////////////////////////////////////////////////////
