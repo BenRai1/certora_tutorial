@@ -39,3 +39,33 @@ rule onlyHolderCanChangeAllowance {
         "only approve and increaseAllowance can increase allowances";
 }
 
+
+/// If the balance of a user decreases the the user was msg.sender 
+
+rule onlyHolderCanDecreaseBalance(method f)
+filtered{
+        f-> f.selector != sig:transferFrom(address,address,uint256).selector
+    }{
+    
+    env e; 
+    address owner; 
+     
+    calldataarg arg;
+    address sender;
+    address recipient;
+    uint256 amount;
+
+    uint256 balanceBefore = balanceOf(owner);
+
+    if (f.selector == sig:transferFrom(address,address,uint256).selector ){
+        assert allowance(owner, e.msg.sender) == 0;
+        transferFrom(e, sender, recipient, amount);
+
+    }
+    f(e, arg);
+
+    uint256 balanceAfter = balanceOf(owner);
+    
+    assert balanceBefore > balanceAfter => e.msg.sender == owner, "Only owner can reduce his balance";
+}
+
