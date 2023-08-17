@@ -91,7 +91,7 @@ contract Borda is IBorda {
         voteTo(first, 3);
         voteTo(second, 2);
         voteTo(third, 1);
-        _voters[msg.sender].registered = false;
+        // _voters[msg.sender].registered = false;
         return true;
     }
 
