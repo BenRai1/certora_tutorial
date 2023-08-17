@@ -39,7 +39,7 @@ contract Manager {
 		isActiveManager[funds[fundId].currentManager] = false;
 		funds[fundId].currentManager = msg.sender;
 		funds[fundId].pendingManager = address(0);
-		isActiveManager[msg.sender] == true; // A common mistake 
+		isActiveManager[msg.sender] == true; // A common mistake to use == instead of =
 	}
 
 	function getCurrentManager(uint256 fundId) public view returns (address) {
