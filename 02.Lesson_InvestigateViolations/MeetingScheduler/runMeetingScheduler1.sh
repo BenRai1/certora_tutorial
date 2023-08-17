@@ -1,4 +1,4 @@
-certoraRun MeetingSchedulerBug1.sol:MeetingScheduler --verify MeetingScheduler:meetings.spec \
---solc solc8.7 \
+certoraRun MeetingScheduler/MeetingSchedulerBug1.sol:MeetingScheduler --verify MeetingScheduler:MeetingScheduler/meetings.spec \
 --send_only \
 --msg "$1"
+# --solc solc8.7 \

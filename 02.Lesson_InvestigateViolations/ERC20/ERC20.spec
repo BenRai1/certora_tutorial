@@ -49,9 +49,9 @@ rule balanceChangesFromCertainFunctions(method f, address user){
     uint256 userBalanceAfter = balanceOf(e, user);
 
     assert userBalanceBefore != userBalanceAfter => 
-        (f.selector == transfer(address, uint256).selector ||
-         f.selector == transferFrom(address, address, uint256).selector ||
-         f.selector == mint(address, uint256).selector ||
-         f.selector == burn(address, uint256).selector),
+        (f.selector == sig:transfer(address, uint256).selector ||
+         f.selector == sig:transferFrom(address, address, uint256).selector ||
+         f.selector == sig:mint(address, uint256).selector ||
+         f.selector == sig:burn(address, uint256).selector),
          "user's balance changed as a result function other than transfer(), transferFrom(), mint() or burn()";
 }

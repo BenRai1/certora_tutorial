@@ -10,13 +10,14 @@ In the sub-directories you will also find a README file with hints and tips for 
 The goal of this exercise is to get familiar with the output of the Certora Prover, especially in case of violations, and to practice bug finding in the code.
 The bugs are relatively simple and can be probably found by eye quite easily. Try not to look for the bugs manually in the implementations before you run the verification and follow the counter-example. As it should be, along with the tool's result you will follow the counter-example through the implementation, and try to understand where it deviates from the intended way of operation. You will then try to mitigate the problem and check it.
 
-Throughout each README file within this directory and its sub-directories, we shall add tips and hints in a  collapsible manner to supply assistance without forcing you to take it. You will have to click on the tip actively to see it.
+Throughout each README file within this directory and its sub-directories, we shall add tips and hints in a collapsible manner to supply assistance without forcing you to take it. You will have to click on the tip actively to see it.
 
 > :bulb:
+>
 > <details>
 >  <summary>An Expandable Tip</summary>
 >  Always tip your waiters and waitresses.
-></details>
+> </details>
 
 </br>
 For each of the systems in this directory do as follows:
@@ -36,20 +37,22 @@ For each of the systems in this directory do as follows:
 - [ ] Create a script (or multiple scripts) that will serve you for running the verifications of the system's buggy versions.
 
 > :bulb:
+>
 > <details>
 >  <summary>Script Hint</summary>
 >  Craft your script wisely - use the `--rule` to filter out information that isn't of your interest.
-></details>
+> </details>
 
 </br>
 
 - [ ] Run verifications of the contracts to find violations of the rules.
 
 > :bulb:
+>
 > <details>
 >  <summary>Best Practice</summary>
 >  First run the <b>entire spec</b> file against the contract you are investigating. This way you'll see which rules you need to focus on. Later you can specify a specific rule to run the contract against to save run time.
-></details>
+> </details>
 
 </br>
 
@@ -60,27 +63,30 @@ For each of the systems in this directory do as follows:
 - [ ] Save your solution to each bug in the same file that you found it in, next to the changed line(s). Mark your findings by adding a comment explaining the fix in 1-2 sentences in the following format: //@note the require checked `a > b`, when it should've checked `b > a`.
 
 > :bulb:
+>
 > <details>
 >  <summary>General Direction</summary>
 >  Most of the bugs are in the solidity contracts, i.e. the rules are passing correctly on the "fixed version" of the code that was corrupted for this exercise.
 > However, in a few specific cases, the specifications were tempered with, i.e. the rules will fail on the "fixed version" as well.
-></details>
+> </details>
 
 </br>
 
 > :bulb:
+>
 > <details>
 >  <summary>General Tip 1</summary>
 > Call traces contains information regarding the storage, arguments and return value.
-></details>
+> </details>
 
 </br>
 
 > :bulb:
+>
 > <details>
 >  <summary>General Tip 2</summary>
 > In the spec file - Try breaking complex expressions to achieve code readability and a more simplified call trace.
-></details>
+> </details>
 
 </br>
 

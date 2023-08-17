@@ -16,7 +16,7 @@ rule registeredCannotChangeOnceSet(method f, address voter) {
 	age, voterRegAfter, voted, vote_attempts, black_listed = getFullVoterDetails(e, voter);
 	
 	assert(voterRegAfter != voterRegBefore =>
-		(!voterRegBefore && voterRegAfter && f.selector == registerVoter(uint8).selector),
+		(!voterRegBefore && voterRegAfter && f.selector == sig:registerVoter(uint8).selector),
 		"voter was registered from an unregistered state, by other function than registerVoter()");
 }
 
