@@ -17,9 +17,41 @@
 
 
 // Checks that when a meeting is created, the planned end time is greater than the start time
-rule startBeforeEnd(method f, uint256 meetingId, uint256 startTime, uint256 endTime) {
+
+methods{
+	function getStateById(uint256 meetingId) external returns (IMeetingScheduler.MeetingStatus) envfree;
+	function getnumOfParticipants(uint256) external returns (uint256) envfree;
+}
+
+definition isUninitalized() returns IMeetingScheduler.MeetingStatus = IMeetingScheduler.MeetingStatus.UNINITIALIZED;
+definition isPending() returns IMeetingScheduler.MeetingStatus = IMeetingScheduler.MeetingStatus.PENDING;
+definition isStarted() returns IMeetingScheduler.MeetingStatus = IMeetingScheduler.MeetingStatus.STARTED;
+definition isEnded() returns IMeetingScheduler.MeetingStatus = IMeetingScheduler.MeetingStatus.ENDED;
+definition isCancelled() returns IMeetingScheduler.MeetingStatus = IMeetingScheduler.MeetingStatus.CANCELLED;
+
+
+
+/// Only meeting can be scheduled (PENDING) that have the status UNINITIALIZED before and only by calling scheduleMeeing
+
+rule canOnlyBeScheduledIfUninitalized(method f, env e, calldataarg arg, uint256 meetingId){
+
+IMeetingScheduler.MeetingStatus stateBefore = getStateById(meetingId);
+
+f(e, arg);
+
+IMeetingScheduler.MeetingStatus stateAfter = getStateById(meetingId);
+
+assert stateBefore == isUninitalized() => (stateAfter == isUninitalized() || stateAfter == isPending()), "State must be UNINITIALIZED or PENDING";
+
+assert (stateBefore == isUninitalized() && stateAfter == isPending()) => f.selector == sig:scheduleMeeting(uint256,uint256,uint256).selector;
+
+
+}
+
+rule startBeforeEnd(method f, calldataarg arg, uint256 meetingId, uint256 startTime, uint256 endTime) {
 	env e;
     scheduleMeeting(e, meetingId, startTime, endTime);
+	f(e, arg);
     uint256 scheduledStartTime = getStartTimeById(e, meetingId);
     uint256 scheduledEndTime = getEndTimeById(e, meetingId);
 
@@ -31,14 +63,14 @@ rule startBeforeEnd(method f, uint256 meetingId, uint256 startTime, uint256 endT
 rule startOnTime(method f, uint256 meetingId) {
 	env e;
 	calldataarg args;
-	uint8 stateBefore = getStateById(e, meetingId);
+	IMeetingScheduler.MeetingStatus stateBefore = getStateById(e, meetingId);
 	f(e, args); // call only non reverting paths to any function on any arguments.
-	uint8 stateAfter = getStateById(e, meetingId);
+	IMeetingScheduler.MeetingStatus stateAfter = getStateById(e, meetingId);
     uint256 startTimeAfter = getStartTimeById(e, meetingId);
     uint256 endTimeAfter = getEndTimeById(e, meetingId);
     
-	assert (stateBefore == 1 && stateAfter == 2) => startTimeAfter <= e.block.timestamp, "started a meeting before the designated starting time.";
-	assert (stateBefore == 1 && stateAfter == 2) => endTimeAfter > e.block.timestamp, "started a meeting after the designated end time.";
+	assert (stateBefore == isPending() && stateAfter == isStarted()) => startTimeAfter <= e.block.timestamp, "started a meeting before the designated starting time.";
+	assert (stateBefore == isPending() && stateAfter == isStarted()) => endTimeAfter > e.block.timestamp, "started a meeting after the designated end time.";
 	
 }
 
@@ -48,12 +80,12 @@ rule startOnTime(method f, uint256 meetingId) {
 rule checkStartedToStateTransition(method f, uint256 meetingId) {
 	env e;
 	calldataarg args;
-	uint8 stateBefore = getStateById(e, meetingId);
+	IMeetingScheduler.MeetingStatus stateBefore = getStateById(e, meetingId);
 	f(e, args);
-    uint8 stateAfter = getStateById(e, meetingId);
+    IMeetingScheduler.MeetingStatus stateAfter = getStateById(e, meetingId);
 	
-	assert (stateBefore == 2 => (stateAfter == 2 || stateAfter == 3)), "the status of the meeting changed from STARTED to an invalid state";
-	assert ((stateBefore == 2 && stateAfter == 3) => f.selector == endMeeting(uint256).selector), "the status of the meeting changed from STARTED to ENDED through a function other then endMeeting()";
+	assert (stateBefore == isStarted() => (stateAfter == isStarted() || stateAfter ==isEnded())), "the status of the meeting changed from STARTED to an invalid state";
+	assert ((stateBefore == isStarted() && stateAfter ==isEnded()) => f.selector == sig:endMeeting(uint256).selector), "the status of the meeting changed from STARTED to ENDED through a function other then endMeeting()";
 }
 
 
@@ -61,26 +93,36 @@ rule checkStartedToStateTransition(method f, uint256 meetingId) {
 // startMeeting() or cancelMeeting() were called, respectively
 // @note read again the comment at the top regarding f.selector
 rule checkPendingToCancelledOrStarted(method f, uint256 meetingId) {
-	env e;
-	calldataarg args;
-	uint8 stateBefore = getStateById(e, meetingId);
-	f(e, args);
-    uint8 stateAfter = getStateById(e, meetingId);
-	
-	assert (stateBefore == 1 => (stateAfter == 1 || stateAfter == 2 || stateAfter == 4)), "invalidation of the state machine";
-	assert ((stateBefore == 1 && stateAfter == 2) => f.selector == startMeeting(uint256).selector), "the status of the meeting changed from PENDING to STARTED through a function other then startMeeting()";
-	assert ((stateBefore == 1 && stateAfter == 4) => f.selector == cancelMeeting(uint256).selector), "the status of the meeting changed from PENDING to CANCELLED through a function other then cancelMeeting()";
+
+	env e; 
+	calldataarg arg;
+
+	IMeetingScheduler.MeetingStatus stateBefore = getStateById(meetingId);
+
+	f(e, arg);
+
+	IMeetingScheduler.MeetingStatus stateAfter = getStateById(meetingId);
+
+	assert stateBefore == isPending() => (stateAfter == isPending() || stateAfter == isCancelled() || stateAfter == isStarted()), "StateAfter must be PENDING, STARTED or CANCLED";
+
+
+	assert (stateBefore == isPending() && (stateAfter == isCancelled() )) => f.selector == sig:cancelMeeting(uint256).selector , "State to CANCLED must be changed by cancleMeeting()";
+
+	assert (stateBefore == isPending() && stateAfter == isStarted()) => (f.selector == sig:startMeeting(uint256).selector), "State to STARTED must be changed by startMeeting()";
 }
 
 
 // Checks that the number of participants in a meeting cannot be decreased
-rule monotonousIncreasingNumOfParticipants(method f, uint256 meetingId) {
-	env e;
-	calldataarg args;
-    require getStateById(e, meetingId) == 0 => getnumOfParticipants(e, meetingId) == 0;
-	uint256 numOfParticipantsBefore = getnumOfParticipants(e, meetingId);
-	f(e, args);
-    uint256 numOfParticipantsAfter = getnumOfParticipants(meetingId);
+rule monotonousIncreasingNumOfParticipants(method f, env e, calldataarg arg, uint256 meetingId) {
 
-	assert numOfParticipantsBefore <= numOfParticipantsAfter, "the number of participants decreased as a result of a function call";
+	require getStateById(meetingId) == isUninitalized() => getnumOfParticipants(meetingId) == 0; 
+
+	mathint numBefore = getnumOfParticipants(meetingId);
+
+	f(e, arg);
+
+	mathint numAfter = getnumOfParticipants(meetingId);
+
+	assert numAfter >= numBefore, "Number of participenst need to increase or stay the same";
+
 }
