@@ -1,29 +1,29 @@
 methods{
-    totalSupply() returns (uint256) envfree
-    balanceOf(address) returns (uint256) envfree
-    transfer(address, uint256) returns (bool)
-    allowance(address, address) returns (uint256) envfree
-    increaseAllowance(address, uint256) returns (bool)
-    decreaseAllowance(address, uint256) returns (bool)
-    approve(address, uint256) returns (bool)
-    transferFrom(address, address, uint256) returns (bool)
-    mint(address, uint256)
-    burn(address, uint256)
+    function totalSupply() external returns (uint256) envfree;
+    function balanceOf(address) external returns (uint256) envfree;
+    function transfer(address, uint256) external returns (bool);
+    function allowance(address, address) external returns (uint256) envfree;
+    function increaseAllowance(address, uint256) external returns (bool);
+    function decreaseAllowance(address, uint256) external returns (bool);
+    function approve(address, uint256) external returns (bool);
+    function transferFrom(address, address, uint256) external returns (bool);
+    function mint(address, uint256) external;
+    function burn(address, uint256) external;
 }    
 
 // sum of 2 accounts' balances cannot be less than a single one of them
 invariant twoBalancesGreaterThanSingle(address account1, address account2)
-    balanceOf(account1) + balanceOf(account2) < balanceOf(account1) => false
+    assert_uint256(balanceOf(account1) + balanceOf(account2)) < balanceOf(account1) => false;
     
 // common mistake - not before and after
 invariant twoBalancesGreaterThanSingleProb(address account1, address account2)
-    balanceOf(account1) + balanceOf(account2) <= balanceOf(account1) + balanceOf(account2)
+    balanceOf(account1) + balanceOf(account2) <= balanceOf(account1) + balanceOf(account2);
 
 // totalSupply & user's balance ratios
 invariant balanceRatios(address account1, address account2)
-    totalSupply() == balanceOf(account1) + balanceOf(account2) =>
+    totalSupply() == assert_uint256(balanceOf(account1) + balanceOf(account2)) =>
         (( balanceOf(account1) + balanceOf(account2) == 0 ) =>
-            totalSupply() + balanceOf(account1) >= balanceOf(account2) )
+            assert_uint256(totalSupply() + balanceOf(account1)) >= balanceOf(account2) );
 
 /* 
  * Try to think about how we can check if this rule is a tautology.
@@ -57,6 +57,7 @@ rule transferOutDoesNotChangePowerBalance(address user1, address user2, address 
     uint256 balance2_ = balanceOf(user2);
 
     assert balance1_ < balance2_;
+    assert false;
 }
 
 /* Hint: 
